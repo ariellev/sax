@@ -1,0 +1,158 @@
+---
+title: 'SAX: Symbolic Aggregate Approximation'
+author: "Ariel Lev, 27. February 2016"
+output: 
+  html_document:
+    keep_md: true
+    css: style.css
+    pandoc_args: [
+      "+RTS", "-K64m",
+      "-RTS"
+    ]    
+---
+
+```{r, echo=F, fig.width=12, fig.height=4, message=F, warning=F}
+
+# loading packages
+
+installed <- rownames(installed.packages())
+required <- c("ggplot2", "knitr", "seewave", "devtools", "TSclust", "wavelets")
+
+# filtering uninstalled packages
+to_install <- required[required %in% installed == F]
+if (length(to_install) > 0) {
+  # installing
+  print("following packages are missing and will be installed:")
+  print(to_install)
+  install.packages(to_install, repos = "http://cran.us.r-project.org")
+}
+
+git_hub_required <- c('Quandl')
+to_install <- git_hub_required[git_hub_required %in% installed == F]
+if (length(to_install) > 0) {
+  # installing
+  print("following packages are missing and will be installed:")
+  print(to_install)
+}
+
+require(ggplot2)
+require(knitr)
+require(seewave)
+require(Quandl)
+require(rCharts)
+require(TSclust)
+require(stats)
+require(dplyr)
+require(wavelets)
+
+#Quandl.api_key("cAFkxw5nDxxw1WJx8xB7")
+# apple <- Quandl("WIKI/AAPL", trim_start="2015-01-01", trim_end="2016-01-01")  
+```
+
+### Getting and cleaning the data
+Loading the Apple Inc (APPL) data set into R and performing an initial exploration.
+```{r, echo=T, message=F}
+apple <- read.table("apple.csv", stringsAsFactors = F)
+apple$Date <- as.Date(apple$Date)
+apple <- apple %>% arrange(Date)
+kable(head(apple,10), caption = "Table 1.|Apple Inc (AAPL) Prices, Dividends, Splits and Trading Volume 2015")
+```
+
+### Dimension reduction using SAX
+Translating the time series into its symbolic representation using SAX, and computing the frequency of each SAX symbol in this representation.
+```{r, echo=T, message=F}
+
+# amount of equal sized frames
+W <- 50 
+
+# The size of the alphabet
+alpha <- 10
+
+data <- apple$Open
+
+
+# assumes that the distribution of the numeric series x follows a Gaussian distribution
+# therefore normalizing
+normalize <- (data - mean(data)) / sd(data)
+
+# convert to SAX representation
+data_paa <- PAA(normalize, W)
+data_sax <- convert.to.SAX.symbol(data_paa, alpha)
+
+# converting to letters
+data_sax <- sapply(data_sax, function(x) LETTERS[x])
+data_sax
+
+# frequency
+table(data_sax)
+```
+
+### Alternative dimensionality reduction method
+```{r, echo=T, message=F}
+# discrete wavelet transform
+wt <- dwt(data,  n.levels=7, boundary="periodic", fast=FALSE)
+
+# discrete Fourier transform
+# data_dft <- FFT(data)
+```
+
+### Parallelize your implementation of SAX
+```{r, echo=T, message=F}
+# TBD 
+```
+
+### A graphical interface
+```{r, echo=T, message=F, results='asis', tidy=F, comment=NA}
+
+## data wrangling for plot
+
+# utility function to convert numeric vectors into data frames containing original dates
+makeDF <- function(x, label, dates, type) {
+  df <- as.data.frame(dates)
+  names(df) <- c("Date")  
+  df[label] <- x
+  df$type <- type
+  df
+}
+
+apple_df <- apple[,1:2]
+apple_df$type <- "Stock"
+
+# calculating PAA over an unnormalized data for the graphical representation
+data_paa <- PAA(data, W)
+
+data_paa <- rep(data_paa, each=length(data)/W)
+data_sax <- rep(data_sax, each=length(data)/W)
+
+# fixing length of p to align it with number of raw observations
+data_paa <- append(data_paa, rep(data_paa[length(data_paa)], length(data) - length(data_paa)))
+data_sax <- append(data_sax, rep(data_sax[length(data_sax)], length(data) - length(data_sax)))
+
+paa_df <- makeDF(data_paa, "Open", apple$Date, "PAA")
+#dwt_df <- makeDF(data_dwt, "Open", apple$Date, "dwt")
+#dft_df <- makeDF(data_dft, "Open", apple$Date, "dft")
+
+all <- rbind(apple_df, paa_df)
+
+## plotting
+p <- nPlot(Open ~ Date, type = "lineChart", data = all, group = "type")
+p$xAxis(
+    tickFormat =   "#!
+      function(d) {return d3.time.format('%B')(new Date(d*1000*3600*24));}
+    !#"
+  )
+
+p$chart(tooltipContent = "#! function(key, x, y){
+        return '<h3>' + key + '</h3>' + 
+        '<p>' + y + ' in ' + x + '</p>'
+        } !#")
+
+p$addParams(width = 1000, pointSize = 0, lineWidth = 1)
+p$xAxis(axisLabel = "Month")
+p$yAxis(axisLabel = "Rate")
+#p$chart(stacked = TRUE)
+#p$chart(reduceXTicks = FALSE)
+#p$chart(color = c('#db1847', '#169998'))
+p$print('iframesrc', include_assets = TRUE)
+
+```

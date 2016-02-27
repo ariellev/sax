@@ -1,0 +1,55 @@
+/* Whole document: */
+body{
+  font-family: Garamond;
+  font-size: 12pt;
+}
+
+h1 {
+  font-size: 22pt;
+  font-variant: small-caps;
+  font-weight: bold;
+}
+
+h2 {
+  font-family: Garamond;
+  font-size: 16pt;
+  font-variant: small-caps;
+  font-weight: bold;
+}
+
+h3 {
+  font-family: Garamond;
+  font-size: 14pt;
+  font-variant: small-caps;
+  font-weight: bold;
+}
+
+h4 {
+  font-family: Garamond;
+  font-size: 12pt;
+  font-variant: small-caps;
+  font-weight: bold;
+}
+
+table {
+  font-family: Garamond;
+  font-size: 9pt;  
+}
+
+code {
+  font-size: 9pt;      
+}
+
+
+button[id*="text"] {
+  font-size: 22pt;
+}
+
+button[id*="sec_text"] {
+  font-size: 12pt;
+  font-color: blue;
+}
+
+input[id*="textInput"] {
+  font-size: 14pt;
+}
