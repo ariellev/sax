@@ -98,7 +98,10 @@ wt <- dwt(data,  n.levels=7, boundary="periodic", fast=FALSE)
 
 ### Parallelize your implementation of SAX
 ```{r, echo=T, message=F}
-# TBD 
+# Can be implemented via a classic MapR job:
+# 1. Map tasks iterate over sequental chunks of data for feature selection. 
+# 2. A combiner averages features and yields PAA values (Piecewise Aggregate Approximation).
+# 3. Reducer sort PAAs and apply SAX.
 ```
 
 ### A graphical interface
