@@ -10,7 +10,7 @@ require(dplyr)
 require(wavelets)
 
 
-apple <- read.table("apple.csv", stringsAsFactors = F)
+apple <- read.table("../apple.csv", stringsAsFactors = F)
 apple$Date <- as.Date(apple$Date)
 apple <- apple %>% arrange(Date)
 

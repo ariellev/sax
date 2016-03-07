@@ -52,7 +52,7 @@ require(wavelets)
 ### Getting and cleaning the data
 Loading the Apple Inc (APPL) data set into R and performing an initial exploration.
 ```{r, echo=T, message=F}
-apple <- read.table("apple.csv", stringsAsFactors = F)
+apple <- read.table("../apple.csv", stringsAsFactors = F)
 apple$Date <- as.Date(apple$Date)
 apple <- apple %>% arrange(Date)
 kable(head(apple,10), caption = "Table 1.|Apple Inc (AAPL) Prices, Dividends, Splits and Trading Volume 2015")
