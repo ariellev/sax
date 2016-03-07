@@ -5,6 +5,8 @@
 **/target/
 **/*cache
 **/.Rhistory
+metastore_db/
+derby.log
 .history
 sax-dashboard/SAX.html
 sax-dashboard/SAX.md
